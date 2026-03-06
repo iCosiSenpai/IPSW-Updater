@@ -5,6 +5,8 @@
 - Forced immediate deletion of outdated IPSW files (permanently deleted, not moved to the Trash).
 - Removed the preferences dialog for trashing files to enforce the new deletion policy.
 - Updated bundle identifiers to `org.icosisenpai.*`.
+- **Optimization:** Streamlined download logic to bypass unnecessary cross-volume APFS transfers (`.download` suffix straight to target).
+- **Optimization:** Dropped deprecated legacy code spanning old macOS versions and irrelevant Apple Configurator tracking.
 
 ### Original Info: Visit [ipsw.app](https://ipsw.app) to [view release notes](https://ipsw.app/download/updates.php) and [download the latest release of the compiled app](https://ipsw.app/download/).
 
