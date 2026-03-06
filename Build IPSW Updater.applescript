@@ -2,7 +2,7 @@
 -- Created by Pico Mitchell (of Free Geek)
 --
 -- https://ipsw.app
--- https://github.com/freegeek-pdx/IPSW-Updater
+-- https://github.com/iCosiSenpai/IPSW-Updater
 --
 -- MIT License
 --
@@ -22,7 +22,7 @@
 use AppleScript version "2.7"
 use scripting additions
 
-set bundleIdentifierPrefix to "org.freegeek."
+set bundleIdentifierPrefix to "org.icosisenpai."
 
 set pathToMeInfo to (info for (path to me))
 

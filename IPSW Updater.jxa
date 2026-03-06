@@ -2,7 +2,7 @@
 // Created by Pico Mitchell (of Free Geek)
 //
 // https://ipsw.app
-// https://github.com/freegeek-pdx/IPSW-Updater
+// https://github.com/iCosiSenpai/IPSW-Updater
 //
 // Uses: IPSW Downloads API (https://ipsw.me) by Callum Jones (https://ipsw.me/about)
 // Icon: “Phone with Arrow” from Fluent Emoji (https://github.com/microsoft/fluentui-emoji) by Microsoft (https://opensource.microsoft.com)
@@ -72,7 +72,7 @@ if (!fileManager.fileExistsAtPath(`${appPath}/Contents/MacOS/${bundleExecutableN
 }
 
 const bundleIdentifier = appBundle.bundleIdentifier.js
-const intendedBundleIdentifier = `org.freegeek.${bundleExecutableName.replace(/ /g, '-')}`
+const intendedBundleIdentifier = `org.icosisenpai.${bundleExecutableName.replace(/ /g, '-')}`
 if (bundleIdentifier != intendedBundleIdentifier) {
 	debugLog('Incorrect Bundle Identifier Error', bundleIdentifier)
 
@@ -553,7 +553,7 @@ const autoWakeTypeTranslation = {wakepoweron: 'Start Up'/* or Wake*/, wake: 'Wak
 /** @type Intl.DateTimeFormatOptions */
 const dateFormatOptions = {weekday: 'short', month: 'long', day: 'numeric', year: 'numeric'}
 
-let shouldImmediatelyDeleteOutdatedFirmwares = getPreference('ImmediatelyDeleteOutdatedFirmwares', 'bool')
+let shouldImmediatelyDeleteOutdatedFirmwares = true
 let shouldDeleteAppleConfiguratorTemporaryFiles = getPreference('DeleteAppleConfiguratorTemporaryFiles', 'bool')
 
 const isFirstRun = getPreference('FirstRun', 'bool')
@@ -605,7 +605,7 @@ if (isFirstRun) {
 
 		try {
 			const welcomeDialogReply = displayAlertOrDialogDependingOnOS(`Welcome to ${appName}!
-Made by Pico Mitchell of Free Geek (freegeek.org) using the IPSW Downloads API (ipsw.me) by Callum Jones.
+		Made by iCosiSenpai using the IPSW Downloads API (ipsw.me) by Callum Jones.
 
 ${appName} can batch download all the latest IPSW Firmware files from Apple and place them in the correct iTunes Software Updates or Apple Configurator Firmware folders so that they are automatically found by ${isCatalinaOrNewer ? 'Finder' : 'iTunes'} and/or Apple Configurator.
 
@@ -616,9 +616,8 @@ iPhone, iPad, and iPod touch IPSW Firmware files will be stored within iTunes So
 
 Apple TV, HomePod mini, Apple Vision, and T2 and Apple Silicon Mac IPSW Firmware files will be stored within the Apple Configurator Firmware folder at “${appleConfiguratorFirmwareFolder}”. This is because unlike iPhone, iPad, and iPod touch IPSW Firmware files, Apple Configurator will not detect or use IPSW Firmware files in the iTunes Software Updates folders for any other device types.${(isSonomaOrNewer ? '' : ` Also, T2 and Apple Silicon Macs cannot be restored by ${isCatalinaOrNewer ? 'Finder' : 'iTunes'} and can only be restored by Apple Configurator when they are put into DFU mode.`)}
 
-Any IPSW Firmware files that are already in these folders will become managed by ${appName}. That means that IPSW Firmware files in these locations will be moved to the Trash (or deleted, based on your ${settingsOrPreferencesName.toLowerCase()}) when they become out-of-date after an update for them has been downloaded by ${appName}. Also, as described above, any iPhone, iPad, and iPod touch IPSW Firmware files that are currently in the Apple Configurator Firmware folder will be moved into their correct iTunes Software Updates folder and any IPSW Firmware files in the iTunes Software Updates folders for any other device types will be moved into the Apple Configurator Firmware folder. Finally, any IPSW Firmware files currently in these folders that are out-of-date but are still signed by Apple will be left alone and any that are no longer signed by Apple will be moved to the Trash (or deleted). ${appName} will check for unsigned IPSW Firmware files each time it runs, so existing files may be trashed (or deleted) in the future if and when Apple no longer signs them.
-
-To use ${appName}, you must agree to let it manage your iTunes Software Updates and Apple Configurator Firmware folders and to update itself (app updates are checked on each launch). Once you agree, you'll be prompted to choose your desired ${settingsOrPreferencesName.toLowerCase()}, such as Excluded Product Types, Included iOS / iPadOS / tvOS Versions, Trash or Delete Outdated Files, Auto-Launch Schedule, and Start Up Schedule.`,
+Any IPSW Firmware files that are already in these folders will become managed by ${appName}. That means that IPSW Firmware files in these locations will be deleted when they become out-of-date after an update for them has been downloaded by ${appName}. Also, as described above, any iPhone, iPad, and iPod touch IPSW Firmware files that are currently in the Apple Configurator Firmware folder will be moved into their correct iTunes Software Updates folder and any IPSW Firmware files in the iTunes Software Updates folders for any other device types will be moved into the Apple Configurator Firmware folder. Finally, any IPSW Firmware files currently in these folders that are out-of-date but are still signed by Apple will be left alone and any that are no longer signed by Apple will be deleted. ${appName} will check for unsigned IPSW Firmware files each time it runs, so existing files may be deleted in the future if and when Apple no longer signs them.
+To use ${appName}, you must agree to let it manage your iTunes Software Updates and Apple Configurator Firmware folders and to update itself (app updates are checked on each launch). Once you agree, you'll be prompted to choose your desired ${settingsOrPreferencesName.toLowerCase()}, such as Excluded Product Types, Included iOS / iPadOS / tvOS Versions, Auto-Launch Schedule, and Start Up Schedule.`,
 				`${appName}  —  Welcome`,
 				'note',
 				['View iTunes Software Updates and Apple Configurator Firmware Folders', 'Quit', `Agree & Choose ${settingsOrPreferencesName}`],
@@ -3217,29 +3216,7 @@ Select Multiple: Click+Drag, Shift+Click, Command+Click`,
 		setPreference('IncludeVersions', newIncludedVersions, 'int')
 	}
 
-	app.activate()
-	try {
-		const trashOrDeleteDialogButtons = ['Immediately Delete Outdated Files', 'Trash Outdated Files']
-		if (shouldImmediatelyDeleteOutdatedFirmwares) trashOrDeleteDialogButtons.reverse()
-		app.displayDialog(`🗑\tWould you like outdated IPSW Firmware files to be trashed\n\tor immediately deleted when ${appName} successfully\n\tdownloads updated IPSW Firmware files?
 
-When outdated IPSW Firmware files are set to be trashed, you will need to manually “Empty Trash” in Finder to delete the files and reclaim the disk space, which could be quite a few GBs when lots of IPSW Firmware files are updated.
-
-But, when outdated IPSW Firmware files are set to be deleted immediately, the disk space usage should stay pretty level since each outdated IPSW Firmware file will be deleted automatically when the updated IPSW Firwmare file is downloaded.
-
-Outdated IPSW Firmware files are currently set to be ${shouldImmediatelyDeleteOutdatedFirmwares ? 'immediately deleted' : 'trashed'}.`,
-			{
-				withTitle: `${appName} ${settingsOrPreferencesName}  —  Trash or Delete Outdated Files`,
-				withIcon: 'note',
-				buttons: trashOrDeleteDialogButtons,
-				cancelButton: 1,
-				defaultButton: 2
-			}
-		)
-	} catch (ignoredError) {
-		shouldImmediatelyDeleteOutdatedFirmwares = !shouldImmediatelyDeleteOutdatedFirmwares
-		setPreference('ImmediatelyDeleteOutdatedFirmwares', shouldImmediatelyDeleteOutdatedFirmwares, 'bool')
-	}
 
 	app.activate()
 	try {
