@@ -131,8 +131,7 @@ ${infoDictVersion}`,
 }
 
 const processInfo = $.NSProcessInfo.processInfo
-const isMojaveOrNewer = processInfo.isOperatingSystemAtLeastVersion({majorVersion: 10, minorVersion: 14, patchVersion: 0})
-const isCatalinaOrNewer = processInfo.isOperatingSystemAtLeastVersion({majorVersion: 10, minorVersion: 15, patchVersion: 0})
+
 const isBigSurOrNewer = processInfo.isOperatingSystemAtLeastVersion({majorVersion: 11, minorVersion: 0, patchVersion: 0})
 const isMontereyOrNewer = processInfo.isOperatingSystemAtLeastVersion({majorVersion: 12, minorVersion: 0, patchVersion: 0})
 const isVenturaOrNewer = processInfo.isOperatingSystemAtLeastVersion({majorVersion: 13, minorVersion: 0, patchVersion: 0})
@@ -554,7 +553,6 @@ const autoWakeTypeTranslation = {wakepoweron: 'Start Up'/* or Wake*/, wake: 'Wak
 const dateFormatOptions = {weekday: 'short', month: 'long', day: 'numeric', year: 'numeric'}
 
 let shouldImmediatelyDeleteOutdatedFirmwares = true
-let shouldDeleteAppleConfiguratorTemporaryFiles = getPreference('DeleteAppleConfiguratorTemporaryFiles', 'bool')
 
 const isFirstRun = getPreference('FirstRun', 'bool')
 let userDidCancel = false
@@ -607,14 +605,14 @@ if (isFirstRun) {
 			const welcomeDialogReply = displayAlertOrDialogDependingOnOS(`Welcome to ${appName}!
 		Made by iCosiSenpai using the IPSW Downloads API (ipsw.me) by Callum Jones.
 
-${appName} can batch download all the latest IPSW Firmware files from Apple and place them in the correct iTunes Software Updates or Apple Configurator Firmware folders so that they are automatically found by ${isCatalinaOrNewer ? 'Finder' : 'iTunes'} and/or Apple Configurator.
+${appName} can batch download all the latest IPSW Firmware files from Apple and place them in the correct iTunes Software Updates or Apple Configurator Firmware folders so that they are automatically found by Finder and/or Apple Configurator.
 
 You can set which IPSW Firmware files to download based on versions as well as product types, such as ${everyProductType.slice(0, -1).join(', ')}, and ${everyProductType.slice(-1)[0]}. You can also set ${appName} to run automatically at a scheduled time so that all of your IPSW Firmware files will always be kept up-to-date.`,
 				`If you agree, ${appName} will take over management of your iTunes Software Updates and Apple Configurator Firmware folders. You can use the button below to view these folders in Finder.
 
-iPhone, iPad, and iPod touch IPSW Firmware files will be stored within iTunes Software Updates folders at “${libraryITunesFolder}” since they will be found by both ${isCatalinaOrNewer ? 'Finder' : 'iTunes'} and Apple Configurator at that location.
+iPhone, iPad, and iPod touch IPSW Firmware files will be stored within iTunes Software Updates folders at “${libraryITunesFolder}” since they will be found by both Finder and Apple Configurator at that location.
 
-Apple TV, HomePod mini, Apple Vision, and T2 and Apple Silicon Mac IPSW Firmware files will be stored within the Apple Configurator Firmware folder at “${appleConfiguratorFirmwareFolder}”. This is because unlike iPhone, iPad, and iPod touch IPSW Firmware files, Apple Configurator will not detect or use IPSW Firmware files in the iTunes Software Updates folders for any other device types.${(isSonomaOrNewer ? '' : ` Also, T2 and Apple Silicon Macs cannot be restored by ${isCatalinaOrNewer ? 'Finder' : 'iTunes'} and can only be restored by Apple Configurator when they are put into DFU mode.`)}
+Apple TV, HomePod mini, Apple Vision, and T2 and Apple Silicon Mac IPSW Firmware files will be stored within the Apple Configurator Firmware folder at “${appleConfiguratorFirmwareFolder}”. This is because unlike iPhone, iPad, and iPod touch IPSW Firmware files, Apple Configurator will not detect or use IPSW Firmware files in the iTunes Software Updates folders for any other device types.${(isSonomaOrNewer ? '' : ` Also, T2 and Apple Silicon Macs cannot be restored by Finder and can only be restored by Apple Configurator when they are put into DFU mode.`)}
 
 Any IPSW Firmware files that are already in these folders will become managed by ${appName}. That means that IPSW Firmware files in these locations will be deleted when they become out-of-date after an update for them has been downloaded by ${appName}. Also, as described above, any iPhone, iPad, and iPod touch IPSW Firmware files that are currently in the Apple Configurator Firmware folder will be moved into their correct iTunes Software Updates folder and any IPSW Firmware files in the iTunes Software Updates folders for any other device types will be moved into the Apple Configurator Firmware folder. Finally, any IPSW Firmware files currently in these folders that are out-of-date but are still signed by Apple will be left alone and any that are no longer signed by Apple will be deleted. ${appName} will check for unsigned IPSW Firmware files each time it runs, so existing files may be deleted in the future if and when Apple no longer signs them.
 To use ${appName}, you must agree to let it manage your iTunes Software Updates and Apple Configurator Firmware folders and to update itself (app updates are checked on each launch). Once you agree, you'll be prompted to choose your desired ${settingsOrPreferencesName.toLowerCase()}, such as Excluded Product Types, Included iOS / iPadOS / tvOS Versions, Auto-Launch Schedule, and Start Up Schedule.`,
@@ -958,8 +956,7 @@ if (macIsAwakeAndUnlocked()) { // Skip launch window if asleep or locked (just s
 		${includedVersionsDisplay}
 
 	🗑 Outdated IPSW Files:
-		${shouldImmediatelyDeleteOutdatedFirmwares ? 'Immediately Deleted' : 'Trashed'}${shouldDeleteAppleConfiguratorTemporaryFiles ? `
-		and Apple Configurator Temporary Files Deleted` : ''}
+		Immediately Deleted
 
 	⏰ Auto-Launch Schedule:
 		${currentAutoLaunchScheduleDisplay}
@@ -1048,21 +1045,7 @@ try {
 	if (!userDidCancel) userDidCancel = (moveOutOfLibraryITunesSoftwareUpdatesFoldersError.errorNumber === -128)
 }
 
-if (shouldDeleteAppleConfiguratorTemporaryFiles) {
-	const appleConfiguratorTemporaryRestoreFolder = `${userLibraryFolder}/Containers/com.apple.configurator.xpc.DeviceService/Data/tmp`
-	if (fileManager.fileExistsAtPath(appleConfiguratorTemporaryRestoreFolder)) {
-		debugLog('Deleting Apple Configurator Temporary Restore Folder')
 
-		try { fileManager.removeItemAtPathError(appleConfiguratorTemporaryRestoreFolder, $()) } catch (ignoredError) { /* Ignore */ }
-	}
-
-	const appleConfiguratorTemporaryDownloadFolder = `${userLibraryFolder}/Containers/com.apple.configurator.xpc.InternetService/Data/tmp`
-	if (fileManager.fileExistsAtPath(appleConfiguratorTemporaryDownloadFolder)) {
-		debugLog('Deleting Apple Configurator Temporary Download Folder')
-
-		try { fileManager.removeItemAtPathError(appleConfiguratorTemporaryDownloadFolder, $()) } catch (ignoredError) { /* Ignore */ }
-	}
-}
 
 debugLog('Starting to Check for IPSW Firmware Updates')
 
@@ -1453,7 +1436,10 @@ for (const thisFirmwareFileName in firmwaresNeedingUpdate) {
 		setProgressStopButtonEnabled(true)
 
 		if (!fileManager.fileExistsAtPath(iTunesSoftwareUpdatesFilePath) || (intendedFirmwareFileSize != fileManager.attributesOfItemAtPathError(iTunesSoftwareUpdatesFilePath, $()).objectForKey('NSFileSize').js) || (intendedFirmwareSHA1Sum != calculateChecksumForFile(iTunesSoftwareUpdatesFilePath))) {
-			const downloadFirmwareFilePath = `${temporaryFilesFolder}/${thisFirmwareFileName}-download`
+			if (!fileManager.fileExistsAtPath(thisProductSoftwareUpdatesFolder))
+				fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(thisProductSoftwareUpdatesFolder, true, {}, $())
+
+			const downloadFirmwareFilePath = `${iTunesSoftwareUpdatesFilePath}.download`
 			firmwareProgressOutputFile = `${temporaryFilesFolder}/${thisFirmwareFileName}-progress`
 
 			let maxDownloadAttempts = 3
@@ -1610,13 +1596,11 @@ ${hourGlass} ${progressPercentage}% Downloaded: ${formatBytes(downloadedFileSize
 
 					if (fileManager.fileExistsAtPath(iTunesSoftwareUpdatesFilePath))
 						try { fileManager.removeItemAtPathError(iTunesSoftwareUpdatesFilePath, $()) } catch (ignoredError) { /* Ignore */ }
-					else if (!fileManager.fileExistsAtPath(thisProductSoftwareUpdatesFolder))
-						fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(thisProductSoftwareUpdatesFolder, true, {}, $())
 
 					try { fileManager.moveItemAtPathToPathError(downloadFirmwareFilePath, iTunesSoftwareUpdatesFilePath, $()) } catch (ignoredError) { /* Ignore */ }
 
 					if (!fileManager.fileExistsAtPath(iTunesSoftwareUpdatesFilePath))
-						throw new Error(`Failed to Move IPSW Firmware File to ${thisProductSoftwareUpdatesFolder}`)
+						throw new Error(`Failed to Rename and Finalize IPSW Firmware File to ${thisProductSoftwareUpdatesFolder}`)
 
 					totalDownloadedSize += downloadedFileSize
 
@@ -2489,7 +2473,7 @@ function validateCodeSignatureForAppAtPath(validateAppPath) {
 
 “${validateAppPath}” does not have a valid “CFBundleShortVersionString”.`)
 
-	const verifyNotarization = (!validateAppVersion.endsWith('-0') && isMojaveOrNewer) // DO NOT verify notarization for testing builds (with versions ending in "-0") since they will only be signed and not notarized, and see comments below about how notarization CANNOT be verified on macOS 10.13 High Sierra.
+	const verifyNotarization = !validateAppVersion.endsWith('-0') // DO NOT verify notarization for testing builds (with versions ending in "-0") since they will only be signed and not notarized
 
 	const intendedCodeSignatureTeamID = 'YRW6NUGA63'
 	const validCSReqString = `${verifyNotarization ? 'notarized and ' : ''}identifier "${bundleIdentifier}" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] exists and certificate leaf[field.1.2.840.113635.100.6.1.13] exists and certificate leaf[subject.OU] = "${intendedCodeSignatureTeamID}"`
@@ -3199,7 +3183,7 @@ Select Multiple: Click+Drag, Shift+Click, Command+Click`,
 \tselection chosen here since there is only a single latest version available for
 \teach one of those OSes.
 
-⚠️\tApple Configurator 2 only supports iOS 7 and newer. Restore older versions using ${isCatalinaOrNewer ? 'Finder' : 'iTunes'}.
+⚠️	Apple Configurator 2 only supports iOS 7 and newer. Restore older versions using Finder.
 \tAlso, older versions of iOS for iPhone 2G (1st Gen) and iPod touch 1 are no longer signed.`,
 				defaultItems: versionDescriptions[versionsKeys.indexOf(getPreference('IncludeVersions', 'int'))], // This returned version will always be sanitized to a valid value by "getPreference()".
 				okButtonName: 'Save iOS / iPadOS / tvOS Version Selection',
@@ -3214,36 +3198,6 @@ Select Multiple: Click+Drag, Shift+Click, Command+Click`,
 			newIncludedVersions = versionsKeys[versionDescriptions.indexOf(includeVersionsChooseReply[0])]
 
 		setPreference('IncludeVersions', newIncludedVersions, 'int')
-	}
-
-
-
-	app.activate()
-	try {
-		const deleteAppleConfiguratorTemporaryFilesDialogButtons = ['Delete Apple Configurator Temporary Files', 'Leave Apple Configurator Temporary Files Alone']
-		if (shouldDeleteAppleConfiguratorTemporaryFiles) deleteAppleConfiguratorTemporaryFilesDialogButtons.reverse()
-		app.displayDialog(`🗑\tWould you like to delete Apple Configurator temporary files at the beginning of each run?
-
-When Apple Configurator performs a restore, the IPSW Firmware file is extracted into a temporary location and sometimes those temporary files can get left behind.
-
-Over time, those temporary files could potentially accumulate and fill up the free space on your internal drive. To avoid this issue, ${appName} can delete these Apple Configurator temporary files at the beginning of each run.
-
-Apple Configurator temporary files that ${shouldDeleteAppleConfiguratorTemporaryFiles ? 'will' : 'can'} be deleted are stored at the following locations:
-• ${userLibraryFolder}/Containers/com.apple.configurator.xpc.DeviceService/Data/tmp
-• ${userLibraryFolder}/Containers/com.apple.configurator.xpc.InternetService/Data/tmp
-
-Apple Configurator temporary files are currently set to be ${shouldDeleteAppleConfiguratorTemporaryFiles ? 'deleted' : 'left alone'}.`,
-			{
-				withTitle: `${appName} ${settingsOrPreferencesName}  —  Apple Configurator Temporary Files`,
-				withIcon: 'note',
-				buttons: deleteAppleConfiguratorTemporaryFilesDialogButtons,
-				cancelButton: 1,
-				defaultButton: 2
-			}
-		)
-	} catch (ignoredError) {
-		shouldDeleteAppleConfiguratorTemporaryFiles = !shouldDeleteAppleConfiguratorTemporaryFiles
-		setPreference('DeleteAppleConfiguratorTemporaryFiles', shouldDeleteAppleConfiguratorTemporaryFiles, 'bool')
 	}
 
 	let setAutoLaunchDialogTitle = `⏰\tWould you like ${appName} to run\n\tautomatically at a scheduled time?`
