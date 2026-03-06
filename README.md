@@ -7,7 +7,7 @@
 - Updated bundle identifiers to `org.icosisenpai.*`.
 - **Optimization:** Streamlined download logic to bypass unnecessary cross-volume APFS transfers (`.download` suffix straight to target).
 - **Optimization:** Dropped deprecated legacy code spanning old macOS versions and irrelevant Apple Configurator tracking.
-
+- **NEW**: Added "Deep Clean Mode" directly into the configuration loop to instantly free up disk space by securely wiping all cached firmware.
 ### Original Info: Visit [ipsw.app](https://ipsw.app) to [view release notes](https://ipsw.app/download/updates.php) and [download the latest release of the compiled app](https://ipsw.app/download/).
 
 IPSW Updater can batch download all the latest IPSW Firmware files from Apple and place them in the correct iTunes Software Updates or Apple Configurator Firmware folders so that they are automatically found by iTunes/Finder and/or Apple Configurator.

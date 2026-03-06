@@ -3717,6 +3717,51 @@ ${JSON.stringify(removeConflictingPowerScheduleError, Object.getOwnPropertyNames
 			)
 		}
 	}
+
+	app.activate()
+	try {
+		const deepCleanDialogReply = app.displayDialog(`🧹\tWould you like to run Deep Clean Mode?
+		
+Deep Clean Mode will instantly scan your iTunes Software Updates and Apple Configurator Firmware folders and permanently delete ALL .ipsw files currently stored, regardless of their signature status.
+
+This is extremely useful if you want to instantly free up massive amounts of storage space.`,
+			{
+				withTitle: `${appName} ${settingsOrPreferencesName}  —  Deep Clean Mode`,
+				withIcon: 'caution',
+				buttons: [`Cancel`, `Run Deep Clean Mode`],
+				cancelButton: 1,
+				defaultButton: 2
+			}
+		)
+
+		if (deepCleanDialogReply.buttonReturned == `Run Deep Clean Mode`) {
+			let deletedFilesCount = 0
+			const foldersToClean = [appleConfiguratorFirmwareFolder, libraryITunesFolder]
+
+			for (const thisFolder of foldersToClean) {
+				if (fileManager.fileExistsAtPath(thisFolder)) {
+					const dirEnum = fileManager.enumeratorAtPath(thisFolder)
+					let fileString = undefined
+					while (fileString = dirEnum.nextObject().js) {
+						if (fileString.endsWith('.ipsw') || fileString.endsWith('.ipsw.download')) {
+							try {
+								fileManager.removeItemAtPathError(`${thisFolder}/${fileString}`, $())
+								deletedFilesCount++
+							} catch (ignoredError) { /* Ignore */ }
+						}
+					}
+				}
+			}
+
+			app.activate()
+			app.displayAlert(`Deep Clean Complete`, {
+				message: `Successfully deleted ${deletedFilesCount} IPSW file${deletedFilesCount === 1 ? '' : 's'}.`,
+				as: 'informational'
+			})
+		}
+	} catch (ignoredError) {
+		// User canceled Deep Clean
+	}
 }
 
 function promptToRemovePowerSchedule() {
